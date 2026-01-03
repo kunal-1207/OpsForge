@@ -1,0 +1,19 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-service-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: api-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: worker-service-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: worker-service
