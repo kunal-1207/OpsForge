@@ -1,0 +1,7 @@
+﻿Collection Time: 2026-08-23 02:21:48
+Collection Mode: Docker
+Hostname: DESKTOP-5ALT2IR
+PowerShell Version: 5.1.26100.8875
+Requested Services: api-service, worker-service
+Since: 30m
+Docker Version: Docker Compose version v5.3.1

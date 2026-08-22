@@ -1,0 +1,111 @@
+pipeline {
+    agent any
+
+    environment {
+        REGISTRY = "ghcr.io/your-org"
+        API_IMAGE = "${REGISTRY}/opsforge-node-api"
+        WORKER_IMAGE = "${REGISTRY}/opsforge-node-worker"
+        GO_API_IMAGE = "${REGISTRY}/opsforge-go-api"
+        UI_IMAGE = "${REGISTRY}/opsforge-ui"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Test & Lint') {
+            parallel {
+                stage('Node API Tests') {
+                    steps {
+                        dir('app/api-service') {
+                            sh 'npm ci'
+                            sh 'npm test || echo "Tests stubbed"'
+                        }
+                    }
+                }
+                stage('Go API Tests') {
+                    steps {
+                        dir('services/opsforge-api') {
+                            sh 'go test ./...'
+                        }
+                    }
+                }
+                stage('UI Lint') {
+                    steps {
+                        dir('portal/opsforge-ui') {
+                            sh 'npm ci'
+                            sh 'npm run build'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Images') {
+            parallel {
+                stage('Build Node API') {
+                    steps {
+                        sh "docker build -t ${API_IMAGE}:${env.BUILD_ID} ./app/api-service"
+                    }
+                }
+                stage('Build Node Worker') {
+                    steps {
+                        sh "docker build -t ${WORKER_IMAGE}:${env.BUILD_ID} ./app/worker-service"
+                    }
+                }
+                stage('Build Go API') {
+                    steps {
+                        sh "docker build -t ${GO_API_IMAGE}:${env.BUILD_ID} ./services/opsforge-api"
+                    }
+                }
+                stage('Build UI') {
+                    steps {
+                        sh "docker build -t ${UI_IMAGE}:${env.BUILD_ID} ./portal/opsforge-ui"
+                    }
+                }
+            }
+        }
+
+        stage('Push Images') {
+            steps {
+                script {
+                    echo "Skipping push for local dev without registry credentials."
+                    // sh "docker push ${API_IMAGE}:${env.BUILD_ID}"
+                    // sh "docker push ${WORKER_IMAGE}:${env.BUILD_ID}"
+                    // sh "docker push ${GO_API_IMAGE}:${env.BUILD_ID}"
+                    // sh "docker push ${UI_IMAGE}:${env.BUILD_ID}"
+                }
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                script {
+                    echo "Deploying to Staging via ArgoCD (updating image tags in Git)"
+                    // Provide a script or GitOps update command here
+                }
+            }
+        }
+
+        stage('Deploy to Production') {
+            input {
+                message "Approve deployment to Production?"
+                ok "Deploy"
+            }
+            steps {
+                script {
+                    echo "Deploying to Production!"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}

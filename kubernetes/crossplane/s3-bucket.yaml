@@ -1,0 +1,11 @@
+apiVersion: s3.aws.upbound.io/v1beta1
+kind: Bucket
+metadata:
+  name: opsforge-assets-bucket
+  labels:
+    environment: dev
+spec:
+  forProvider:
+    region: us-west-2
+  providerConfigRef:
+    name: default

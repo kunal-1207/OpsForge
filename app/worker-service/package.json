@@ -1,0 +1,33 @@
+{
+  "name": "worker-service",
+  "version": "1.0.0",
+  "description": "Production-grade background worker service for the OpsForge platform",
+  "main": "src/worker.js",
+  "scripts": {
+    "start": "node --require ./tracing.js src/worker.js",
+    "dev": "nodemon src/worker.js"
+  },
+  "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.79.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.221.0",
+    "@opentelemetry/sdk-node": "^0.221.0",
+    "axios": "^1.5.0",
+    "bull": "^4.10.4",
+    "dotenv": "^16.3.1",
+    "prom-client": "^14.2.0",
+    "redis": "^4.6.7",
+    "winston": "^3.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "worker",
+    "microservice",
+    "devops",
+    "production",
+    "queue"
+  ],
+  "author": "OpsForge Platform",
+  "license": "MIT"
+}

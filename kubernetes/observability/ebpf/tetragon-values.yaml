@@ -1,0 +1,10 @@
+tetragon:
+  enableProcessCred: true
+  enableProcessNs: true
+  exportFilename: "tetragon.log"
+  exportFileMaxSizeMB: 10
+  exportFileMaxBackups: 5
+  exportFileCompress: false
+  
+  # Export logs in JSON format for easy parsing
+  exportJSON: true
