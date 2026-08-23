@@ -8,28 +8,18 @@ OpsForge 2.0 is a **production-oriented Internal Developer Platform (IDP) and SR
 
 Rather than presenting Kubernetes, Terraform, GitOps, observability, security, autoscaling, and reliability engineering as isolated technologies, OpsForge connects them into a complete engineering lifecycle:
 
-```text
-Code
-  ↓
-Test
-  ↓
-Security Scan
-  ↓
-Build
-  ↓
-Containerize
-  ↓
-Deploy
-  ↓
-Observe
-  ↓
-Detect
-  ↓
-Investigate
-  ↓
-Recover
-  ↓
-Learn
+```mermaid
+flowchart TB
+    A[Code] --> B[Test]
+    B --> C[Security Scan]
+    C --> D[Build]
+    D --> E[Containerize]
+    E --> F[Deploy]
+    F --> G[Observe]
+    G --> H[Detect]
+    H --> I[Investigate]
+    I --> J[Recover]
+    J --> K[Learn]
 ```
 
 The objective is simple:
