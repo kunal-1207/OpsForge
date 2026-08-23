@@ -9,6 +9,3 @@ spec:
   selector:
     labelSelectors:
       app: api-service
-  duration: "1m"
-  scheduler:
-    cron: "@every 2m"

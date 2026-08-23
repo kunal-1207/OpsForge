@@ -3,7 +3,7 @@ module "eks" {
   version = "19.16.0"
 
   cluster_name    = var.cluster_name
-  cluster_version = "1.28"
+  cluster_version = "1.31"
 
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
@@ -18,7 +18,7 @@ module "eks" {
       min_size     = 1
       max_size     = 4
 
-      instance_types = ["t3.medium"]
+      instance_types = ["t3.micro"]
       capacity_type  = "ON_DEMAND"
     }
   }
