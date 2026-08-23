@@ -11,8 +11,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_API: ${{ github.repository }}-api
-  IMAGE_NAME_WORKER: ${{ github.repository }}-worker
+  IMAGE_NAME_API: kunal-1207/opsforge-api
+  IMAGE_NAME_WORKER: kunal-1207/opsforge-worker
 
 jobs:
   build-and-push:
@@ -117,8 +117,8 @@ jobs:
     - name: Deploy to Dev using Kustomize
       run: |
         cd k8s/overlays/dev
-        kustomize edit set image ghcr.io/${{ github.repository }}-api:${{ github.event.workflow_run.head_sha }}=ghcr.io/${{ github.repository }}-api:${{ github.event.workflow_run.head_sha }}
-        kustomize edit set image ghcr.io/${{ github.repository }}-worker:${{ github.event.workflow_run.head_sha }}=ghcr.io/${{ github.repository }}-worker:${{ github.event.workflow_run.head_sha }}
+        kustomize edit set image ghcr.io/kunal-1207/opsforge-api:${{ github.event.workflow_run.head_sha }}=ghcr.io/kunal-1207/opsforge-api:${{ github.event.workflow_run.head_sha }}
+        kustomize edit set image ghcr.io/kunal-1207/opsforge-worker:${{ github.event.workflow_run.head_sha }}=ghcr.io/kunal-1207/opsforge-worker:${{ github.event.workflow_run.head_sha }}
         kubectl apply -k . --timeout=10m
 
   deploy-prod:
@@ -151,6 +151,6 @@ jobs:
     - name: Deploy to Prod using Kustomize
       run: |
         cd k8s/overlays/prod
-        kustomize edit set image ghcr.io/${{ github.repository }}-api:${{ github.event.workflow_run.head_sha }}=ghcr.io/${{ github.repository }}-api:${{ github.event.workflow_run.head_sha }}
-        kustomize edit set image ghcr.io/${{ github.repository }}-worker:${{ github.event.workflow_run.head_sha }}=ghcr.io/${{ github.repository }}-worker:${{ github.event.workflow_run.head_sha }}
+        kustomize edit set image ghcr.io/kunal-1207/opsforge-api:${{ github.event.workflow_run.head_sha }}=ghcr.io/kunal-1207/opsforge-api:${{ github.event.workflow_run.head_sha }}
+        kustomize edit set image ghcr.io/kunal-1207/opsforge-worker:${{ github.event.workflow_run.head_sha }}=ghcr.io/kunal-1207/opsforge-worker:${{ github.event.workflow_run.head_sha }}
         kubectl apply -k . --timeout=10m

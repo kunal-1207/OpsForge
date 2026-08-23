@@ -61,7 +61,7 @@ jobs:
       uses: aquasecurity/trivy-action@master
       with:
         scan-type: 'image'
-        image-ref: 'ghcr.io/${{ github.repository }}-api:latest'
+        image-ref: 'ghcr.io/kunal-1207/opsforge-api:latest'
         format: 'sarif'
         output: 'trivy-api-results.sarif'
         severity: 'CRITICAL,HIGH'
@@ -70,7 +70,7 @@ jobs:
       uses: aquasecurity/trivy-action@master
       with:
         scan-type: 'image'
-        image-ref: 'ghcr.io/${{ github.repository }}-worker:latest'
+        image-ref: 'ghcr.io/kunal-1207/opsforge-worker:latest'
         format: 'sarif'
         output: 'trivy-worker-results.sarif'
         severity: 'CRITICAL,HIGH'
