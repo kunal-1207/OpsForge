@@ -65,30 +65,19 @@ OpsForge operates across three primary environments:
 3. **AWS Cloud Infrastructure**
 
 ```mermaid
-graph TB
+flowchart TB
 
-    %% =========================
-    %% Developer Layer
-    %% =========================
-
-    Developer[Developer]
-
-    Portal[OpsForge Developer Portal<br/>TypeScript / React]
-
-    CLI[OpsForge CLI<br/>Go]
+    Developer["Developer"]
+    Portal["OpsForge Developer Portal<br/>TypeScript / React"]
+    CLI["OpsForge CLI<br/>Go"]
 
     Developer --> Portal
     Developer --> CLI
 
-
-    %% =========================
-    %% Application Layer
-    %% =========================
-
-    subgraph Applications
-        NodeAPI[Node.js API]
-        Worker[Node.js Worker]
-        Redis[(Redis)]
+    subgraph APP["Application Layer"]
+        NodeAPI["Node.js API"]
+        Worker["Node.js Worker"]
+        Redis[("Redis")]
     end
 
     Portal --> NodeAPI
@@ -96,15 +85,10 @@ graph TB
     NodeAPI --> Redis
     Worker --> Redis
 
-
-    %% =========================
-    %% Control Plane
-    %% =========================
-
-    subgraph OpsForge_Control_Plane
-        GoAPI[OpsForge Control Plane API<br/>Go]
-        Controller[OpsForge Kubernetes Controller<br/>Go]
-        PostgreSQL[(PostgreSQL)]
+    subgraph CONTROL["OpsForge Control Plane"]
+        GoAPI["Control Plane API<br/>Go"]
+        Controller["Kubernetes Controller<br/>Go"]
+        PostgreSQL[("PostgreSQL")]
     end
 
     NodeAPI --> GoAPI
@@ -112,48 +96,31 @@ graph TB
     GoAPI --> PostgreSQL
     GoAPI --> Controller
 
-    Controller --> Kubernetes
-
-
-    %% =========================
-    %% Kubernetes
-    %% =========================
-
-    subgraph Kubernetes_Platform
-
-        Kubernetes[Kubernetes Cluster]
-
-        K8sAPI[API Workloads]
-        K8sWorker[Worker Workloads]
-
-        KEDA[KEDA]
-        ArgoCD[Argo CD]
-        Crossplane[Crossplane]
-        ChaosMesh[Chaos Mesh]
-
-        Kubernetes --> K8sAPI
-        Kubernetes --> K8sWorker
-
-        KEDA --> K8sWorker
-        ArgoCD --> Kubernetes
-        Crossplane --> Kubernetes
-        ChaosMesh --> Kubernetes
+    subgraph K8S["Kubernetes Platform"]
+        Kubernetes["Kubernetes Cluster"]
+        K8sAPI["API Workloads"]
+        K8sWorker["Worker Workloads"]
+        KEDA["KEDA"]
+        ArgoCD["Argo CD"]
+        Crossplane["Crossplane"]
+        ChaosMesh["Chaos Mesh"]
     end
 
+    Controller --> Kubernetes
+    Kubernetes --> K8sAPI
+    Kubernetes --> K8sWorker
+    KEDA --> K8sWorker
+    ArgoCD --> Kubernetes
+    Crossplane --> Kubernetes
+    ChaosMesh --> Kubernetes
 
-    %% =========================
-    %% Observability
-    %% =========================
-
-    subgraph Observability
-
-        OTel[OpenTelemetry]
-        Prometheus[Prometheus]
-        Grafana[Grafana]
-        Loki[Loki]
-        Alertmanager[Alertmanager]
-        Tetragon[eBPF / Cilium Tetragon]
-
+    subgraph OBS["Observability"]
+        OTel["OpenTelemetry"]
+        Prometheus["Prometheus"]
+        Grafana["Grafana"]
+        Loki["Loki"]
+        Alertmanager["Alertmanager"]
+        Tetragon["Cilium Tetragon / eBPF"]
     end
 
     K8sAPI --> OTel
@@ -163,31 +130,20 @@ graph TB
     OTel --> Prometheus
     OTel --> Grafana
     OTel --> Loki
-
     Prometheus --> Alertmanager
-
     Tetragon --> Grafana
 
-
-    %% =========================
-    %% Cloud
-    %% =========================
-
-    subgraph AWS
-
-        EKS[AWS EKS]
-        RDS[(Amazon RDS PostgreSQL)]
-        S3[(Amazon S3)]
-
+    subgraph AWS["AWS Infrastructure"]
+        EKS["AWS EKS"]
+        RDS[("Amazon RDS PostgreSQL")]
+        S3[("Amazon S3")]
     end
 
-    Terraform[Terraform]
+    Terraform["Terraform"]
 
     Terraform --> EKS
     Terraform --> RDS
-
     Crossplane --> S3
-
     Kubernetes --> EKS
     GoAPI --> RDS
 ```
