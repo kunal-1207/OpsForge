@@ -237,12 +237,10 @@ flowchart TB
 
 OpsForge provides two primary interfaces for interacting with the platform:
 
-```text
-Developer
-   │
-   ├── Web Portal
-   │
-   └── CLI
+```mermaid
+flowchart LR
+    DEV[Developer] --> PORTAL[Web Portal]
+    DEV --> CLI[CLI]
 ```
 
 The **React / TypeScript developer portal** provides a web-based platform interface, while the **Go CLI** provides a command-line workflow.
@@ -255,32 +253,24 @@ This creates the foundation for platform-oriented capabilities such as self-serv
 
 The platform separates platform operations from application business logic through a dedicated **Go control plane**.
 
-```text
-Portal / CLI
-     │
-     ▼
-Go Control Plane
-     │
-     ├── PostgreSQL
-     │
-     └── Kubernetes Controller
-              │
-              ▼
-          Kubernetes
+```mermaid
+flowchart TB
+    DX[Portal / CLI] --> CP[Go Control Plane]
+
+    CP --> DB[(PostgreSQL)]
+    CP --> CTRL[Kubernetes Controller]
+
+    CTRL --> K8S[Kubernetes]
 ```
 
 The Kubernetes controller follows the reconciliation model:
 
-```text
-Desired State
-     ↓
-Custom Resource
-     ↓
-Go Controller
-     ↓
-Reconciliation
-     ↓
-Actual State
+```mermaid
+flowchart LR
+    A[Desired State] --> B[Custom Resource]
+    B --> C[Go Controller]
+    C --> D[Reconciliation Loop]
+    D --> E[Actual State]
 ```
 
 This provides hands-on implementation around:
@@ -303,14 +293,16 @@ This provides hands-on implementation around:
 
 Terraform manages the AWS infrastructure foundation.
 
-```text
-AWS
-├── VPC
-├── Networking
-├── IAM
-├── EKS
-├── RDS
-└── Supporting Resources
+```mermaid
+flowchart TB
+    TF[Terraform]
+
+    TF --> VPC[VPC]
+    TF --> NET[Networking]
+    TF --> IAM[IAM]
+    TF --> EKS[Amazon EKS]
+    TF --> RDS[(Amazon RDS)]
+    TF --> SUPPORT[Supporting Resources]
 ```
 
 Typical workflow:
@@ -329,14 +321,10 @@ terraform apply
 
 OpsForge also demonstrates a Kubernetes-native infrastructure model through Crossplane:
 
-```text
-Kubernetes
-     │
-     ▼
-Crossplane
-     │
-     ▼
-Cloud Resources
+```mermaid
+flowchart LR
+    K8S[Kubernetes] --> CROSS[Crossplane]
+    CROSS --> CLOUD[Cloud Resources]
 ```
 
 This provides two complementary infrastructure-management approaches:
@@ -352,16 +340,12 @@ This provides two complementary infrastructure-management approaches:
 
 Argo CD provides declarative Kubernetes delivery:
 
-```text
-Developer
-    ↓
-Git Commit
-    ↓
-Git Repository
-    ↓
-Argo CD
-    ↓
-Kubernetes
+```mermaid
+flowchart LR
+    DEV[Developer] --> COMMIT[Git Commit]
+    COMMIT --> REPO[Git Repository]
+    REPO --> ARGO[Argo CD]
+    ARGO --> K8S[Kubernetes]
 ```
 
 The workflow supports:
@@ -380,11 +364,10 @@ Observability is treated as a **platform capability**, not an afterthought.
 
 ```mermaid
 flowchart LR
-    APP[Application] --> OTEL[OpenTelemetry]
-
-    OTEL --> PROM[Prometheus]
-    OTEL --> GRAF[Grafana]
-    OTEL --> LOKI[Loki]
+    DEV[Developer] --> COMMIT[Git Commit]
+    COMMIT --> REPO[Git Repository]
+    REPO --> ARGO[Argo CD]
+    ARGO --> K8S[Kubernetes Cluster]
 ```
 
 ## Metrics
@@ -408,14 +391,17 @@ OpenTelemetry provides distributed telemetry across application and platform com
 
 Example request path:
 
-```text
-API
- ↓
-Control Plane
- ↓
-Redis / PostgreSQL
- ↓
-Worker
+```mermaid
+flowchart LR
+    API[Node.js API] --> CP[Go Control Plane]
+    CP --> DATA[(Redis / PostgreSQL)]
+    DATA --> WORKER[Node.js Worker]
+
+    OTEL[OpenTelemetry]
+
+    API -.-> OTEL
+    CP -.-> OTEL
+    WORKER -.-> OTEL
 ```
 
 ## Alerting
@@ -471,16 +457,12 @@ This complements application-level metrics, logs, and traces with runtime-level 
 
 OpsForge uses Redis-backed background workloads as the scaling signal for KEDA.
 
-```text
-Application
-     ↓
-Redis Queue
-     ↓
-Queue Depth
-     ↓
-KEDA
-     ↓
-Worker Replicas
+```mermaid
+flowchart LR
+    APP[Application] --> QUEUE[(Redis Queue)]
+    QUEUE --> DEPTH[Queue Depth]
+    DEPTH --> KEDA[KEDA]
+    KEDA --> WORKER[Worker Replicas]
 ```
 
 Instead of relying exclusively on CPU or memory utilization, worker capacity can respond to **actual application workload**.
@@ -504,18 +486,13 @@ OpsForge applies core Site Reliability Engineering concepts directly to the plat
 
 ## SLO Model
 
-```text
-SLI
- ↓
-SLO
- ↓
-Error Budget
- ↓
-Burn Rate
- ↓
-Alert
- ↓
-Incident Response
+```mermaid 
+flowchart LR
+    SLI[Service Level Indicator] --> SLO[Service Level Objective]
+    SLO --> EB[Error Budget]
+    EB --> BR[Burn Rate]
+    BR --> ALERT[Alert]
+    ALERT --> IR[Incident Response]
 ```
 
 The goal is to connect reliability targets with actual operational decisions rather than treating SLOs as documentation only.
@@ -530,54 +507,40 @@ OpsForge models controlled failure scenarios including:
 
 ### Application Failure
 
-```text
-Application Failure
-       ↓
-Kubernetes Detection
-       ↓
-Container Restart
-       ↓
-Health Recovery
+```mermaid
+flowchart LR
+    A[Application Failure] --> B[Kubernetes Detection]
+    B --> C[Container Restart]
+    C --> D[Health Recovery]
 ```
 
 ### Queue Overload
 
-```text
-Traffic Increase
-       ↓
-Queue Growth
-       ↓
-KEDA Scaling
-       ↓
-Queue Drain
+```mermaid
+flowchart LR
+    A[Traffic Increase] --> B[Queue Growth]
+    B --> C[KEDA Scaling]
+    C --> D[Queue Drain]
 ```
 
 ### Bad Deployment
 
-```text
-Deployment
-    ↓
-Error Rate Increase
-    ↓
-Alert
-    ↓
-Investigation
-    ↓
-Rollback
-    ↓
-Recovery
+```mermaid
+flowchart LR
+    A[Deployment] --> B[Error Rate Increase]
+    B --> C[Alert]
+    C --> D[Investigation]
+    D --> E[Rollback]
+    E --> F[Recovery]
 ```
 
 ### Pod Disruption
 
-```text
-Pod Failure
-    ↓
-Kubernetes Rescheduling
-    ↓
-Replacement Pod
-    ↓
-Service Recovery
+```mermaid
+flowchart LR
+    A[Pod Failure] --> B[Kubernetes Rescheduling]
+    B --> C[Replacement Pod]
+    C --> D[Service Recovery]
 ```
 
 ---
@@ -683,16 +646,12 @@ k3d cluster delete opsforge-cluster
 
 The intended lab lifecycle is:
 
-```text
-Provision
-   ↓
-Test
-   ↓
-Inspect
-   ↓
-Experiment
-   ↓
-Tear Down
+```mermaid
+flowchart LR
+    A[Provision] --> B[Test]
+    B --> C[Inspect]
+    C --> D[Experiment]
+    D --> E[Tear Down]
 ```
 
 ![Environment cleanup](docs/evidence/environment-cleanup.png)
