@@ -580,7 +580,8 @@ docker compose ps
 
 The captured environment includes the local API, worker, control-plane API, UI, PostgreSQL, Redis, Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry Collector, Jaeger, and supporting services.
 
-![Docker Compose validation](docs/evidence/docker-compose-services.png)
+![Docker Compose validation](<img width="1917" height="818" alt="Screenshot 2026-08-23 150145" src="https://github.com/user-attachments/assets/2614a8f9-e387-47b7-b1e4-e8fc5c24ec2f" />
+)
 
 ---
 
