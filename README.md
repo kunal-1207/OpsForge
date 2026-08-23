@@ -69,42 +69,89 @@ OpsForge brings together the major disciplines involved in building and operatin
 
 OpsForge is organized into five logical layers:
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    Developer Experience                     │
-│                                                             │
-│             React / TypeScript Portal  ·  Go CLI            │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 Application & Control Plane                 │
-│                                                             │
-│   Node.js API · Worker · Redis · Go Control Plane           │
-│              Kubernetes Controller · PostgreSQL             │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Kubernetes Runtime                        │
-│                                                             │
-│      Kubernetes · Argo CD · KEDA · Crossplane · Chaos Mesh │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Observability & Runtime Security               │
-│                                                             │
-│ OpenTelemetry · Prometheus · Grafana · Loki · Alertmanager  │
-│                 Cilium Tetragon / eBPF                      │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       AWS Infrastructure                     │
-│                                                             │
-│       VPC · IAM · EKS · RDS · S3 · CloudWatch · Terraform  │
-└─────────────────────────────────────────────────────────────┘
+flowchart TB
+```mermaid
+    subgraph DX["Developer Experience"]
+        PORTAL["React / TypeScript Portal"]
+        CLI["Go CLI"]
+    end
+
+    subgraph APP["Application & Control Plane"]
+        API["Node.js API"]
+        WORKER["Node.js Worker"]
+        REDIS[("Redis")]
+        CONTROL["Go Control Plane"]
+        CTRL["Kubernetes Controller"]
+        DB[("PostgreSQL")]
+    end
+
+    subgraph K8S["Kubernetes Runtime"]
+        KUBE["Kubernetes"]
+        ARGO["Argo CD"]
+        KEDA["KEDA"]
+        CROSS["Crossplane"]
+        CHAOS["Chaos Mesh"]
+    end
+
+    subgraph OBS["Observability & Runtime Security"]
+        OTEL["OpenTelemetry"]
+        PROM["Prometheus"]
+        GRAF["Grafana"]
+        LOKI["Loki"]
+        ALERT["Alertmanager"]
+        TETRA["Cilium Tetragon / eBPF"]
+    end
+
+    subgraph AWS["AWS Infrastructure"]
+        VPC["VPC"]
+        IAM["IAM"]
+        EKS["Amazon EKS"]
+        RDS["Amazon RDS"]
+        S3["Amazon S3"]
+        CW["CloudWatch"]
+        TF["Terraform"]
+    end
+
+    %% Developer Experience → Application & Control Plane
+    PORTAL --> API
+    CLI --> CONTROL
+
+    %% Application & Control Plane
+    API --> WORKER
+    API --> REDIS
+    WORKER --> REDIS
+    API --> CONTROL
+    CONTROL --> DB
+    CONTROL --> CTRL
+
+    %% Control Plane → Kubernetes
+    CTRL --> KUBE
+    ARGO --> KUBE
+    CROSS --> KUBE
+    CHAOS --> KUBE
+    KEDA --> WORKER
+
+    %% Application / Platform → Observability
+    API --> OTEL
+    WORKER --> OTEL
+    CONTROL --> OTEL
+
+    OTEL --> PROM
+    OTEL --> LOKI
+    OTEL --> GRAF
+    PROM --> ALERT
+    TETRA --> GRAF
+
+    %% AWS Infrastructure
+    TF --> VPC
+    TF --> IAM
+    TF --> EKS
+    TF --> RDS
+    TF --> S3
+    TF --> CW
+
+    KUBE --> EKS
+    CONTROL --> RDS
 ```
 
 ### End-to-End Architecture
