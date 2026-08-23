@@ -1,280 +1,211 @@
-# OpsForge 2.0
-
-### Internal Developer Platform • SRE • Cloud Native • DevSecOps
-
-**OpsForge 2.0** is a cloud-native Internal Developer Platform (IDP) and Site Reliability Engineering (SRE) framework designed to demonstrate how engineering teams can build, deploy, observe, secure, and operate distributed applications.
-
-The platform combines **application development, Kubernetes orchestration, Infrastructure as Code, GitOps, observability, security automation, event-driven scaling, infrastructure provisioning, and failure engineering** into a single engineering environment.
-
-> **OpsForge is built around one principle:**
+OpsForge 2.0
+Internal Developer Platform · SRE · Cloud Native · DevSecOps
 > **Build it. Deploy it. Observe it. Break it. Recover it.**
-
-Rather than presenting isolated DevOps tools, OpsForge demonstrates how those tools interact as one operational system.
-
+OpsForge 2.0 is a production-oriented engineering sandbox that brings application delivery, Kubernetes, infrastructure as code, GitOps, observability, security, autoscaling, and reliability engineering into one cohesive platform.
+It is designed to answer a practical question:
+What does a modern DevOps / SRE / Platform Engineering workflow look like when the individual tools have to operate as one system?
 ---
-
-## 🎯 What Is OpsForge?
-
-Modern DevOps and SRE work is not about knowing individual tools in isolation.
-
-A production engineering platform typically has to answer questions such as:
-
-* How does a developer deploy an application?
-* How is infrastructure provisioned?
-* How does Kubernetes maintain desired state?
-* How does the platform scale workloads?
-* How do engineers detect failures?
-* How do they trace requests across services?
-* How are vulnerabilities detected before deployment?
-* How does the system recover from failure?
-* How are infrastructure changes managed safely?
-* How does an engineer investigate an incident?
-
-OpsForge provides a hands-on environment for answering those questions.
-
-The platform combines:
-
+Platform at a Glance
+Capability	Implementation
+Application Platform	Node.js API · Node.js Worker · Redis
+Internal Platform	Go Control Plane · Go CLI · Kubernetes Controller
+Developer Experience	TypeScript / React Developer Portal
+Containers	Docker
+Orchestration	Kubernetes
+Packaging & Config	Helm · Kustomize
+Infrastructure as Code	Terraform
+Kubernetes-Native Infrastructure	Crossplane
+GitOps	Argo CD
+Autoscaling	KEDA
+Observability	OpenTelemetry · Prometheus · Grafana · Loki
+Alerting	Alertmanager
+Runtime Visibility	Cilium Tetragon / eBPF
+Security	Trivy · RBAC · NetworkPolicies · SecurityContexts
+CI/CD	GitHub Actions · Jenkins
+Reliability	SLI · SLO · Error Budgets · Burn Rate
+Failure Engineering	Chaos Mesh
+Automation	Go · Python · PowerShell · Bash
+---
+Why OpsForge Exists
+OpsForge is intentionally more than a collection of DevOps tools.
+The platform models the engineering lifecycle from code to operations:
 ```text
-Application Engineering
-        +
-Cloud Infrastructure
-        +
-Kubernetes
-        +
-Platform Engineering
-        +
-GitOps
-        +
-Observability
-        +
-Security
-        +
-SRE
-        +
-Failure Engineering
+┌──────────────┐
+│     Code     │
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│     Test     │
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│ Security Scan│
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│    Build     │
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│  Containerize│
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│    Deploy    │
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│   Observe    │
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│    Detect    │
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│  Investigate │
+└──────┬───────┘
+       ↓
+┌──────────────┐
+│    Recover   │
+└──────┬───────┘
+       ↓
+     Learn
 ```
-
+The goal is to demonstrate operational thinking, not simply familiarity with individual technologies.
 ---
-
-# 🏗️ Architecture
-
-OpsForge operates across three primary environments:
-
-1. **Local Development**
-2. **Kubernetes Platform**
-3. **AWS Cloud Infrastructure**
-
+Architecture
+OpsForge is organized around five logical layers:
+Developer Experience
+Application & Platform Control Plane
+Kubernetes Runtime
+Observability & Runtime Security
+AWS Infrastructure
 ```mermaid
 flowchart TB
 
-    Developer["Developer"]
-    Portal["OpsForge Developer Portal<br/>TypeScript / React"]
-    CLI["OpsForge CLI<br/>Go"]
+    D["Developer"]
 
-    Developer --> Portal
-    Developer --> CLI
+    subgraph DX["Developer Experience"]
+        UI["OpsForge Portal<br/>React / TypeScript"]
+        CLI["OpsForge CLI<br/>Go"]
+    end
+
+    D --> UI
+    D --> CLI
 
     subgraph APP["Application Layer"]
-        NodeAPI["Node.js API"]
-        Worker["Node.js Worker"]
-        Redis[("Redis")]
+        API["Node.js API"]
+        WORKER["Node.js Worker"]
+        REDIS[("Redis")]
     end
 
-    Portal --> NodeAPI
-    NodeAPI --> Worker
-    NodeAPI --> Redis
-    Worker --> Redis
+    UI --> API
+    API --> WORKER
+    API --> REDIS
+    WORKER --> REDIS
 
-    subgraph CONTROL["OpsForge Control Plane"]
-        GoAPI["Control Plane API<br/>Go"]
-        Controller["Kubernetes Controller<br/>Go"]
-        PostgreSQL[("PostgreSQL")]
+    subgraph CP["Platform Control Plane"]
+        CONTROL["Control Plane API<br/>Go"]
+        CTRL["Kubernetes Controller<br/>Go"]
+        DB[("PostgreSQL")]
     end
 
-    NodeAPI --> GoAPI
-    CLI --> GoAPI
-    GoAPI --> PostgreSQL
-    GoAPI --> Controller
+    CLI --> CONTROL
+    API --> CONTROL
+    CONTROL --> DB
+    CONTROL --> CTRL
 
     subgraph K8S["Kubernetes Platform"]
-        Kubernetes["Kubernetes Cluster"]
-        K8sAPI["API Workloads"]
-        K8sWorker["Worker Workloads"]
+        KUBE["Kubernetes"]
         KEDA["KEDA"]
-        ArgoCD["Argo CD"]
-        Crossplane["Crossplane"]
-        ChaosMesh["Chaos Mesh"]
+        ARGO["Argo CD"]
+        CROSS["Crossplane"]
+        CHAOS["Chaos Mesh"]
     end
 
-    Controller --> Kubernetes
-    Kubernetes --> K8sAPI
-    Kubernetes --> K8sWorker
-    KEDA --> K8sWorker
-    ArgoCD --> Kubernetes
-    Crossplane --> Kubernetes
-    ChaosMesh --> Kubernetes
+    CTRL --> KUBE
+    ARGO --> KUBE
+    CROSS --> KUBE
+    CHAOS --> KUBE
+    KEDA --> WORKER
 
-    subgraph OBS["Observability"]
-        OTel["OpenTelemetry"]
-        Prometheus["Prometheus"]
-        Grafana["Grafana"]
-        Loki["Loki"]
-        Alertmanager["Alertmanager"]
-        Tetragon["Cilium Tetragon / eBPF"]
+    subgraph OBS["Observability & Runtime Security"]
+        OTEL["OpenTelemetry"]
+        PROM["Prometheus"]
+        GRAF["Grafana"]
+        LOKI["Loki"]
+        ALERT["Alertmanager"]
+        TETRA["Cilium Tetragon / eBPF"]
     end
 
-    K8sAPI --> OTel
-    K8sWorker --> OTel
-    GoAPI --> OTel
+    API --> OTEL
+    WORKER --> OTEL
+    CONTROL --> OTEL
+    OTEL --> PROM
+    OTEL --> GRAF
+    OTEL --> LOKI
+    PROM --> ALERT
+    TETRA --> GRAF
 
-    OTel --> Prometheus
-    OTel --> Grafana
-    OTel --> Loki
-    Prometheus --> Alertmanager
-    Tetragon --> Grafana
-
-    subgraph AWS["AWS Infrastructure"]
-        EKS["AWS EKS"]
-        RDS[("Amazon RDS PostgreSQL")]
+    subgraph AWS["AWS"]
+        EKS["Amazon EKS"]
+        RDS[("Amazon RDS")]
         S3[("Amazon S3")]
+        TF["Terraform"]
     end
 
-    Terraform["Terraform"]
-
-    Terraform --> EKS
-    Terraform --> RDS
-    Crossplane --> S3
-    Kubernetes --> EKS
-    GoAPI --> RDS
+    TF --> EKS
+    TF --> RDS
+    KUBE --> EKS
+    CONTROL --> RDS
+    CROSS --> S3
 ```
-
 ---
-
-# 🧩 Core Platform Components
-
-| Layer                  | Technology         | Responsibility                              |
-| ---------------------- | ------------------ | ------------------------------------------- |
-| Developer Portal       | TypeScript / React | Self-service platform interface             |
-| Control Plane          | Go                 | Platform API and orchestration              |
-| CLI                    | Go                 | Command-line platform operations            |
-| Kubernetes Controller  | Go                 | Reconciliation and desired-state management |
-| Application API        | Node.js / Express  | REST application service                    |
-| Worker                 | Node.js / Bull     | Background job processing                   |
-| Queue                  | Redis              | Asynchronous workload processing            |
-| Database               | PostgreSQL         | Platform metadata and persistence           |
-| Container Runtime      | Docker             | Application containerization                |
-| Orchestration          | Kubernetes         | Workload scheduling and lifecycle           |
-| Packaging              | Helm               | Kubernetes application packaging            |
-| Configuration          | Kustomize          | Environment-specific configuration          |
-| Infrastructure         | Terraform          | AWS infrastructure provisioning             |
-| Infrastructure Control | Crossplane         | Kubernetes-native infrastructure management |
-| GitOps                 | Argo CD            | Declarative cluster delivery                |
-| Autoscaling            | KEDA               | Event-driven worker scaling                 |
-| Metrics                | Prometheus         | Metrics collection                          |
-| Dashboards             | Grafana            | Operational visualization                   |
-| Logs                   | Loki               | Centralized logging                         |
-| Telemetry              | OpenTelemetry      | Distributed telemetry                       |
-| Alerting               | Alertmanager       | Alert routing                               |
-| Runtime Security       | Cilium Tetragon    | eBPF-based runtime visibility               |
-| Security Scanning      | Trivy              | Container and IaC vulnerability scanning    |
-| CI                     | GitHub Actions     | Automated validation and delivery           |
-| CI Alternative         | Jenkins / Groovy   | Pipeline automation                         |
-| Chaos Engineering      | Chaos Mesh         | Controlled failure experiments              |
-
+Engineering Model
+Developer Experience
+The developer-facing layer provides two paths into the platform:
+```text
+Developer
+   │
+   ├── Web Portal
+   │
+   └── CLI
+```
+The portal is implemented with React / TypeScript, while the CLI is implemented in Go.
+Platform Control Plane
+The Go control plane separates platform operations from application business logic.
+```text
+Portal / CLI
+     │
+     ▼
+Go Control Plane
+     │
+     ├── PostgreSQL
+     │
+     └── Kubernetes Controller
+                │
+                ▼
+           Kubernetes
+```
+The Kubernetes controller follows the reconciliation model:
+```text
+Desired State
+      ↓
+Custom Resource
+      ↓
+Go Controller
+      ↓
+Reconciliation
+      ↓
+Actual State
+```
+This provides hands-on exposure to Kubernetes APIs, CRDs, controllers, reconciliation, REST APIs, concurrency, structured logging, CLI development, and testing.
 ---
-
-# 🚀 Quick Start
-
-OpsForge provides two primary execution environments.
-
-## 1. Local Development
-
-The local environment is intended for development, experimentation, and learning.
-
-### Prerequisites
-
-Install:
-
-* Docker
-* Docker Compose
-* Git
-* Node.js
-* Go
-* Python
-* PowerShell
-
-Clone the repository:
-
-```bash
-git clone https://github.com/kunal-1207/OpsForge.git
-cd OpsForge
-```
-
-Start the local platform:
-
-```bash
-docker compose up --build -d
-```
-
-Check running services:
-
-```bash
-docker compose ps
-```
-
-### Local Services
-
-| Service         | URL                    |
-| --------------- | ---------------------- |
-| OpsForge Portal | http://localhost:5173  |
-| Node.js API     | http://localhost:3000  |
-| Grafana         | http://localhost:3001  |
-| Jaeger          | http://localhost:16686 |
-
-Ports may vary depending on the current Compose configuration.
-
----
-
-# ☸️ Kubernetes Deployment
-
-OpsForge can be deployed to a local Kubernetes cluster such as:
-
-* kind
-* minikube
-* Docker Desktop Kubernetes
-
-Apply the development overlay:
-
-```bash
-kubectl apply -k kubernetes/overlays/dev
-```
-
-Verify workloads:
-
-```bash
-kubectl get pods -A
-```
-
-Check services:
-
-```bash
-kubectl get svc -A
-```
-
-Check deployments:
-
-```bash
-kubectl get deployments -A
-```
-
----
-
-# ☁️ AWS Infrastructure
-
-Terraform is responsible for provisioning the foundational AWS infrastructure.
-
-The infrastructure layer can provision components such as:
-
+Delivery & Infrastructure
+Terraform
+Terraform manages the foundational AWS infrastructure.
+The infrastructure layer covers the AWS foundation required by the platform, including:
 ```text
 AWS
 ├── VPC
@@ -284,15 +215,7 @@ AWS
 ├── RDS
 └── Supporting resources
 ```
-
-Location:
-
-```text
-infrastructure/terraform/
-```
-
 Typical workflow:
-
 ```bash
 terraform init
 terraform fmt
@@ -300,462 +223,121 @@ terraform validate
 terraform plan
 terraform apply
 ```
-
-> **Important:** AWS credentials must never be committed to the repository.
-
-Use the AWS CLI credential chain, environment variables, or an appropriate CI/CD secret-management mechanism.
-
----
-
-# 🏗️ Platform Engineering
-
-OpsForge introduces a dedicated control plane implemented in **Go**.
-
-The control plane provides the foundation for platform automation.
-
+Crossplane
+Crossplane demonstrates a complementary Kubernetes-native infrastructure model:
+```text
+Kubernetes
+     │
+     ▼
+ Crossplane
+     │
+     ▼
+Cloud Resources
+```
+This gives the project two distinct infrastructure-management perspectives:
+Terraform → infrastructure provisioning and cloud foundation
+Crossplane → Kubernetes-native infrastructure management
+GitOps
+Argo CD provides declarative Kubernetes delivery:
 ```text
 Developer
-    │
-    ▼
-OpsForge Portal / CLI
-    │
-    ▼
-Go Control Plane
-    │
-    ├── PostgreSQL
-    │
-    └── Kubernetes Controller
-              │
-              ▼
-          Kubernetes
-```
-
-The control plane is responsible for platform-level operations rather than application business logic.
-
----
-
-# 🐹 Go Engineering
-
-Go is used throughout the platform for cloud-native engineering.
-
-Components include:
-
-### Control Plane API
-
-Provides the platform API.
-
-### CLI
-
-Provides command-line access to platform operations.
-
-Example:
-
-```bash
-opsforge app list
-opsforge app get payments
-opsforge app deploy payments
-opsforge app status payments
-opsforge app rollback payments
-```
-
-### Kubernetes Controller
-
-The controller demonstrates the Kubernetes reconciliation model.
-
-Conceptually:
-
-```text
-Desired State
-     │
-     ▼
-Custom Resource
-     │
-     ▼
-Go Controller
-     │
-     ▼
-Reconciliation
-     │
-     ▼
-Actual Kubernetes State
-```
-
-This provides hands-on experience with:
-
-* Go
-* Kubernetes APIs
-* CRDs
-* controllers
-* reconciliation
-* structured logging
-* REST APIs
-* CLI development
-* concurrency
-* testing
-
----
-
-# 🗄️ PostgreSQL
-
-PostgreSQL provides persistent storage for platform metadata.
-
-The database is used for information such as:
-
-* applications
-* environments
-* deployments
-* deployment events
-* incidents
-* audit events
-
-The database layer demonstrates:
-
-* relational modeling
-* SQL
-* migrations
-* indexes
-* constraints
-* transactions
-* connection management
-
-Database configuration is externalized and must never contain committed credentials.
-
----
-
-# 🔄 GitOps with Argo CD
-
-Argo CD provides declarative Kubernetes delivery.
-
-The desired workflow is:
-
-```text
-Developer
-    │
-    ▼
+    ↓
 Git Commit
-    │
-    ▼
+    ↓
 Git Repository
-    │
-    ▼
+    ↓
 Argo CD
-    │
-    ▼
+    ↓
 Kubernetes
 ```
-
-Argo CD provides:
-
-* declarative deployments
-* synchronization
-* drift detection
-* deployment health
-* rollback capabilities
-
-Configuration:
-
-```text
-kubernetes/argocd/
-```
-
-Example:
-
-```bash
-kubectl apply -f kubernetes/argocd/opsforge-app.yaml
-```
-
+The model supports synchronization, drift detection, deployment health, and rollback-oriented workflows.
 ---
-
-# 📈 Event-Driven Autoscaling with KEDA
-
-OpsForge uses Redis-backed background jobs to demonstrate event-driven scaling.
-
-The scaling model is:
-
+Observability
+Observability is treated as a platform capability rather than an afterthought.
 ```text
-Application
-    │
-    ▼
-Redis Queue
-    │
-    ▼
-Queue Depth
-    │
-    ▼
-KEDA
-    │
-    ▼
-Worker Replicas
+                    ┌── Prometheus
+                    │
+Application ──► OpenTelemetry ──┼── Grafana
+                    │
+                    └── Loki
 ```
-
-When queue depth increases, KEDA can increase worker capacity.
-
-When workload decreases, worker capacity can scale down.
-
-Configuration:
-
-```text
-kubernetes/base/keda-scaledobject.yaml
-```
-
-This complements Kubernetes HPA by allowing scaling based on application workload signals rather than only CPU or memory utilization.
-
----
-
-# 🔭 Observability
-
-OpsForge treats observability as a first-class platform capability.
-
-## OpenTelemetry
-
-OpenTelemetry provides distributed telemetry across application and platform components.
-
-The telemetry pipeline can include:
-
-```text
-Application
-    │
-    ▼
-OpenTelemetry
-    │
-    ├── Metrics
-    ├── Logs
-    └── Traces
-```
-
-This enables distributed request analysis across:
-
+Metrics
+Prometheus is used for operational and application metrics such as:
+request rate
+latency
+error rate
+resource utilization
+queue depth
+worker processing rate
+Logs
+Loki provides centralized log aggregation, with structured service logging used where practical.
+Traces
+OpenTelemetry provides distributed telemetry across application and platform components, enabling request-path analysis across:
 ```text
 API
  ↓
-Go Control Plane
+Control Plane
  ↓
 Redis / PostgreSQL
  ↓
 Worker
 ```
-
+Alerting
+Alertmanager handles alert routing and grouping for conditions such as:
+availability degradation
+elevated error rates
+latency
+saturation
+pod failures
+queue backlog
+infrastructure health
 ---
-
-## Prometheus
-
-Prometheus collects operational and application metrics.
-
-Examples include:
-
-* request rate
-* request latency
-* error rate
-* resource utilization
-* queue depth
-* worker processing rate
-
+Runtime Security
+OpsForge incorporates security into both the delivery and runtime layers.
+Build / IaC Security
+Trivy is used for:
+container image vulnerability scanning
+dependency vulnerability scanning
+infrastructure configuration scanning
+Kubernetes Security
+The platform incorporates:
+RBAC
+NetworkPolicies
+SecurityContexts
+resource limits
+least-privilege access
+eBPF Runtime Visibility
+Cilium Tetragon provides lower-level runtime visibility into:
+processes
+system activity
+network behavior
+container activity
+The intent is to complement application metrics, logs, and traces with runtime-level signals.
 ---
-
-## Grafana
-
-Grafana provides operational dashboards for:
-
-* application health
-* Kubernetes resources
-* workload performance
-* infrastructure utilization
-* SRE indicators
-
----
-
-## Loki
-
-Loki provides centralized log aggregation.
-
-Services produce structured logs where practical, allowing engineers to correlate logs with operational events.
-
----
-
-## Alertmanager
-
-Alertmanager handles alert routing and grouping.
-
-Alerts can cover:
-
-* service availability
-* elevated error rates
-* latency
-* resource saturation
-* pod failures
-* queue backlog
-* infrastructure health
-
----
-
-# 🧬 eBPF Runtime Observability
-
-OpsForge includes eBPF-based runtime visibility using **Cilium Tetragon**.
-
-This provides lower-level visibility into:
-
-* processes
-* system activity
-* network behavior
-* container runtime activity
-
-Configuration:
-
+Event-Driven Scaling
+Redis-backed background jobs provide the workload signal for KEDA.
 ```text
-kubernetes/observability/ebpf/
+Application
+     ↓
+Redis Queue
+     ↓
+Queue Depth
+     ↓
+KEDA
+     ↓
+Worker Replicas
 ```
-
-Example:
-
-```bash
-kubectl logs \
-  -n kube-system \
-  -l app.kubernetes.io/name=tetragon \
-  -c export-stdout \
-  -f
-```
-
-eBPF complements application-level observability rather than replacing metrics, logs, or traces.
-
+As queue depth changes, KEDA can adjust worker capacity based on application workload rather than relying exclusively on CPU or memory utilization.
 ---
-
-# 🛡️ Security
-
-Security is integrated into the development and deployment lifecycle.
-
-## Container Security
-
-Trivy is used for vulnerability scanning.
-
-Example checks include:
-
-* container image vulnerabilities
-* dependency vulnerabilities
-* infrastructure configuration issues
-
-## Kubernetes Security
-
-OpsForge incorporates:
-
-* RBAC
-* NetworkPolicies
-* SecurityContexts
-* resource limits
-* least-privilege access
-
-Security configuration:
-
-```text
-kubernetes/security/
-```
-
----
-
-# 🔧 Infrastructure as Code
-
-Terraform manages cloud infrastructure.
-
-Crossplane provides a complementary Kubernetes-native infrastructure model.
-
-The distinction is intentional:
-
-```text
-Terraform
-    │
-    ▼
-Cloud Foundation
-```
-
-while:
-
-```text
-Kubernetes
-    │
-    ▼
-Crossplane
-    │
-    ▼
-Cloud Resources
-```
-
-This demonstrates two different infrastructure management paradigms.
-
----
-
-# 🔀 CI/CD
-
-OpsForge supports multiple CI/CD approaches.
-
-## GitHub Actions
-
-Located under:
-
-```text
-.github/workflows/
-```
-
-The pipeline can perform:
-
-```text
-Checkout
-   ↓
-Test
-   ↓
-Lint
-   ↓
-Security Scan
-   ↓
-Build
-   ↓
-Container Scan
-   ↓
-Publish
-   ↓
-Deploy
-```
-
-## Jenkins
-
-A declarative Jenkins pipeline demonstrates Groovy-based CI/CD automation.
-
-Location:
-
-```text
-cicd/jenkins/Jenkinsfile
-```
-
-GitHub Actions is the primary repository CI workflow; Jenkins exists as an additional platform engineering example.
-
----
-
-# 🧪 SRE & Reliability Engineering
-
-OpsForge applies core SRE principles to the platform.
-
-## Four Golden Signals
-
-### Latency
-
-How long requests take.
-
-### Traffic
-
-How much demand the system receives.
-
-### Errors
-
-How frequently requests or operations fail.
-
-### Saturation
-
-How close the system is to its resource limits.
-
----
-
-## SLOs and Error Budgets
-
-OpsForge uses:
-
+Reliability Engineering
+OpsForge applies core SRE concepts to the platform.
+Four Golden Signals
+Signal	Question
+Latency	How long does the system take to respond?
+Traffic	How much demand is the system receiving?
+Errors	How often does the system fail?
+Saturation	How close is the system to its resource limits?
+SLO Model
 ```text
 SLI
  ↓
@@ -766,551 +348,119 @@ Error Budget
 Burn Rate
  ↓
 Alert
+ ↓
+Incident Response
 ```
-
-The goal is to demonstrate how reliability targets can influence operational decisions.
-
+The purpose is to connect reliability targets with operational decisions.
 ---
-
-# 💥 Failure Engineering
-
-A reliable system must be tested under failure.
-
-OpsForge includes controlled failure scenarios such as:
-
-### Application failure
-
+Failure Engineering
+A reliability platform should not only demonstrate the happy path.
+OpsForge includes controlled failure scenarios covering:
+Application failure
 ```text
-Application crashes
-        ↓
-Kubernetes detects failure
-        ↓
-Container restarted
-        ↓
-Health restored
+Application Failure
+       ↓
+Kubernetes Detection
+       ↓
+Container Restart
+       ↓
+Health Recovery
 ```
-
-### Queue overload
-
+Queue overload
 ```text
-Traffic increases
-        ↓
-Redis queue grows
-        ↓
-KEDA scales workers
-        ↓
-Queue drains
+Traffic Increase
+       ↓
+Queue Growth
+       ↓
+KEDA Scaling
+       ↓
+Queue Drain
 ```
-
-### Bad deployment
-
+Bad deployment
 ```text
 Deployment
-     ↓
-Error rate increases
-     ↓
+    ↓
+Error Rate Increase
+    ↓
 Alert
-     ↓
+    ↓
 Investigation
-     ↓
+    ↓
 Rollback
-     ↓
+    ↓
 Recovery
 ```
-
-### Pod disruption
-
+Pod disruption
 ```text
-Pod failure
+Pod Failure
     ↓
-Kubernetes rescheduling
+Kubernetes Rescheduling
     ↓
-Replacement pod
+Replacement Pod
     ↓
-Service recovery
+Service Recovery
 ```
-
 ---
-
-# 🌪️ Chaos Engineering
-
-Chaos Mesh is used to introduce controlled failures into Kubernetes workloads.
-
-Example experiment:
-
+Chaos Engineering
+Chaos Mesh is used for controlled Kubernetes failure experiments.
+Example:
 ```bash
 kubectl apply \
   -f kubernetes/observability/chaos/pod-kill-experiment.yaml
 ```
-
-The purpose is not simply to break the system.
-
-The experiment should answer:
-
-> Can the platform detect the failure, maintain acceptable availability, recover automatically, and provide enough telemetry for an engineer to diagnose what happened?
-
+The objective is not simply to cause failure.
+The engineering question is:
+> **Can the platform detect the failure, maintain acceptable availability, recover, and provide enough telemetry for an engineer to diagnose the incident?**
 ---
-
-# 🤖 SRE Automation Toolkit
-
-OpsForge includes operational utilities for common engineering tasks.
-
-## PowerShell — Log Collection
-
-Collect diagnostic logs from Docker Compose or Kubernetes.
-
-```powershell
-cd automation/powershell
-
-.\Collect-Logs.ps1 `
-  -Mode Docker `
-  -Services api-service,worker-service `
-  -OutputDirectory .\artifacts\logs
-```
-
-Kubernetes example:
-
-```powershell
-.\Collect-Logs.ps1 `
-  -Mode Kubernetes `
-  -Services api-service,worker-service,opsforge-api `
-  -OutputDirectory .\artifacts\logs
-```
-
-The utility produces a structured archive containing:
-
-* service logs
-* collection metadata
-* environment information
-* collection errors
-
----
-
-## Python — Cluster Health
-
-The Python automation layer provides operational health checks using Prometheus data.
-
-```bash
-cd automation/python
-
-pip install -r requirements.txt
-
-python cluster-health.py \
-  --prometheus-url http://localhost:9090
-```
-
-Potential operational checks include:
-
-* service availability
-* error rates
-* latency
-* resource health
-* alert state
-
----
-
-# 📁 Repository Structure
-
-```text
-OpsForge/
-│
-├── app/
-│   ├── api-service/
-│   └── worker-service/
-│
-├── services/
-│   ├── opsforge-api/
-│   └── opsforge-controller/
-│
-├── cli/
-│   └── opsforge/
-│
-├── portal/
-│   └── opsforge-ui/
-│
-├── database/
-│   └── migrations/
-│
-├── infrastructure/
-│   └── terraform/
-│
-├── kubernetes/
-│   ├── base/
-│   ├── overlays/
-│   ├── crds/
-│   ├── rbac/
-│   ├── security/
-│   ├── argocd/
-│   ├── crossplane/
-│   └── observability/
-│
-├── cicd/
-│   └── jenkins/
-│
-├── .github/
-│   └── workflows/
-│
-├── automation/
-│   ├── python/
-│   └── powershell/
-│
-├── chaos/
-│
-├── docs/
-│   ├── architecture/
-│   ├── getting-started/
-│   ├── operations/
-│   ├── runbooks/
-│   └── adr/
-│
-├── docker-compose.yml
-├── Makefile
-└── README.md
-```
-
-The actual repository structure should be treated as authoritative if it differs from this conceptual overview.
-
----
-
-# 🧰 Developer Workflow
-
-The intended engineering lifecycle is:
-
-```text
-Code
- │
- ▼
-Test
- │
- ▼
-Security Scan
- │
- ▼
-Build
- │
- ▼
-Containerize
- │
- ▼
-Deploy
- │
- ▼
-Observe
- │
- ▼
-Detect
- │
- ▼
-Investigate
- │
- ▼
-Recover
- │
- ▼
-Learn
-```
-
-This lifecycle is the core idea behind OpsForge.
-
-OpsForge 2.0
-Internal Developer Platform • SRE • Cloud Native • DevSecOps
-OpsForge 2.0 is a cloud-native Internal Developer Platform (IDP) and
-Site Reliability Engineering (SRE) framework designed to demonstrate how
-engineering teams can build, deploy, observe, secure, and operate
-distributed applications.
-The platform combines application development, Kubernetes
-orchestration, Infrastructure as Code, GitOps, observability, security
-automation, event-driven scaling, infrastructure provisioning, and
-failure engineering into a single engineering environment.
-> **OpsForge is built around one principle:** **Build it. Deploy it.
-> Observe it. Break it. Recover it.**
-Rather than presenting isolated DevOps tools, OpsForge demonstrates how
-those tools interact as one operational system.
----
-🎯 What Is OpsForge?
-Modern DevOps and SRE work is not about knowing individual tools in
-isolation.
-A production engineering platform typically has to answer questions such
-as:
-How does a developer deploy an application?
-How is infrastructure provisioned?
-How does Kubernetes maintain desired state?
-How does the platform scale workloads?
-How do engineers detect failures?
-How do they trace requests across services?
-How are vulnerabilities detected before deployment?
-How does the system recover from failure?
-How are infrastructure changes managed safely?
-How does an engineer investigate an incident?
-OpsForge provides a hands-on environment for answering those questions.
-The platform combines:
-``` text
-Application Engineering
-        +
-Cloud Infrastructure
-        +
-Kubernetes
-        +
-Platform Engineering
-        +
-GitOps
-        +
-Observability
-        +
-Security
-        +
-SRE
-        +
-Failure Engineering
-```
----
-🏗️ Architecture
-OpsForge operates across three primary environments:
-Local Development
-Kubernetes Platform
-AWS Cloud Infrastructure
-``` mermaid
-flowchart TB
-
-    Developer["Developer"]
-    Portal["OpsForge Developer Portal<br/>TypeScript / React"]
-    CLI["OpsForge CLI<br/>Go"]
-
-    Developer --> Portal
-    Developer --> CLI
-
-    subgraph APP["Application Layer"]
-        NodeAPI["Node.js API"]
-        Worker["Node.js Worker"]
-        Redis[("Redis")]
-    end
-
-    Portal --> NodeAPI
-    NodeAPI --> Worker
-    NodeAPI --> Redis
-    Worker --> Redis
-
-    subgraph CONTROL["OpsForge Control Plane"]
-        GoAPI["Control Plane API<br/>Go"]
-        Controller["Kubernetes Controller<br/>Go"]
-        PostgreSQL[("PostgreSQL")]
-    end
-
-    NodeAPI --> GoAPI
-    CLI --> GoAPI
-    GoAPI --> PostgreSQL
-    GoAPI --> Controller
-
-    subgraph K8S["Kubernetes Platform"]
-        Kubernetes["Kubernetes Cluster"]
-        K8sAPI["API Workloads"]
-        K8sWorker["Worker Workloads"]
-        KEDA["KEDA"]
-        ArgoCD["Argo CD"]
-        Crossplane["Crossplane"]
-        ChaosMesh["Chaos Mesh"]
-    end
-
-    Controller --> Kubernetes
-    Kubernetes --> K8sAPI
-    Kubernetes --> K8sWorker
-    KEDA --> K8sWorker
-    ArgoCD --> Kubernetes
-    Crossplane --> Kubernetes
-    ChaosMesh --> Kubernetes
-
-    subgraph OBS["Observability"]
-        OTel["OpenTelemetry"]
-        Prometheus["Prometheus"]
-        Grafana["Grafana"]
-        Loki["Loki"]
-        Alertmanager["Alertmanager"]
-        Tetragon["Cilium Tetragon / eBPF"]
-    end
-
-    K8sAPI --> OTel
-    K8sWorker --> OTel
-    GoAPI --> OTel
-
-    OTel --> Prometheus
-    OTel --> Grafana
-    OTel --> Loki
-    Prometheus --> Alertmanager
-    Tetragon --> Grafana
-
-    subgraph AWS["AWS Infrastructure"]
-        EKS["AWS EKS"]
-        RDS[("Amazon RDS PostgreSQL")]
-        S3[("Amazon S3")]
-    end
-
-    Terraform["Terraform"]
-
-    Terraform --> EKS
-    Terraform --> RDS
-    Crossplane --> S3
-    Kubernetes --> EKS
-    GoAPI --> RDS
-```
----
-🧩 Core Platform Components
----
-Layer              Technology      Responsibility
----
-Developer Portal   TypeScript /    Self-service platform interface
-React
-Control Plane      Go              Platform API and orchestration
-CLI                Go              Command-line platform operations
-Kubernetes         Go              Reconciliation and desired-state
-Controller                         management
-Application API    Node.js /       REST application service
-Express
-Worker             Node.js / Bull  Background job processing
-Queue              Redis           Asynchronous workload processing
-Database           PostgreSQL      Platform metadata and persistence
-Container Runtime  Docker          Application containerization
-Orchestration      Kubernetes      Workload scheduling and lifecycle
-Packaging          Helm            Kubernetes application packaging
-Configuration      Kustomize       Environment-specific configuration
-Infrastructure     Terraform       AWS infrastructure provisioning
-Infrastructure     Crossplane      Kubernetes-native infrastructure
-Control                            management
-GitOps             Argo CD         Declarative cluster delivery
-Autoscaling        KEDA            Event-driven worker scaling
-Metrics            Prometheus      Metrics collection
-Dashboards         Grafana         Operational visualization
-Logs               Loki            Centralized logging
-Telemetry          OpenTelemetry   Distributed telemetry
-Alerting           Alertmanager    Alert routing
-Runtime Security   Cilium Tetragon eBPF-based runtime visibility
-Security Scanning  Trivy           Container and IaC vulnerability
-scanning
-CI                 GitHub Actions  Automated validation and delivery
-CI Alternative     Jenkins /       Pipeline automation
-Groovy
-Chaos Engineering  Chaos Mesh      Controlled failure experiments
----
-🚀 Quick Start
-OpsForge provides two primary execution environments.
-1. Local Development
-The local environment is intended for development, experimentation, and
-learning.
-Prerequisites
-Install:
-Docker
+Validation Evidence
+The repository contains execution screenshots documenting the engineering workflow.
+> These screenshots are **lab validation evidence**, not a claim that OpsForge is operating as a production service.
 Docker Compose
-Git
-Node.js
-Go
-Python
-PowerShell
-Clone the repository:
-``` bash
-git clone https://github.com/kunal-1207/OpsForge.git
-cd OpsForge
-```
-Start the local platform:
-``` bash
-docker compose up --build -d
-```
-Check running services:
-``` bash
+The local platform was brought up with Docker Compose and inspected with:
+```bash
 docker compose ps
 ```
-Local Services
-Service           URL
----
-OpsForge Portal   http://localhost:5173
-Node.js API       http://localhost:3000
-Grafana           http://localhost:3001
-Jaeger            http://localhost:16686
-Ports may vary depending on the current Compose configuration.
----
-🧾 Validation & Execution Evidence
-OpsForge is not presented only as a collection of configuration files.
-The following screenshots document actual local execution and
-infrastructure validation performed against the project.
-> **Evidence policy:** screenshots are included as execution evidence.
-> They are not claims of production operation. Where a validation run
-> exposed an issue, it is called out explicitly rather than hidden.
-🐳 Docker Compose --- Local Platform Running
-The local Compose environment was started successfully and
-`docker compose ps` showed the platform services running, including the
-API, worker, OpsForge control-plane API, UI, PostgreSQL, Redis,
-Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry Collector,
-Jaeger, and Redis Commander.
-![Docker Compose services](docs/evidence/docker-compose-services.png)
-🧰 SRE Automation --- Log Collection
-The PowerShell diagnostic utility was executed against the Docker
-environment.
-The run reports:
-Docker prerequisites validated
-`api-service` logs collected successfully
-`worker-service` logs collected successfully
-2 services collected
-0 failures
-ZIP archive created successfully
-![Successful log collection](docs/evidence/log-collection-success.png)
-☸️ Kubernetes --- Workload Reconciliation Evidence
-A development Kubernetes environment was deployed and inspected with
-`kubectl get all -n dev`.
-The screenshot demonstrates that Kubernetes created the expected API,
-worker, Redis, Services, ReplicaSets, Deployments, and
-HorizontalPodAutoscaler resources.
-It also captures an important real-world validation result: the API and
-worker workloads entered `ImagePullBackOff` / `ErrImagePull` because the
-referenced container images were not successfully pulled in that
-environment. This is intentionally documented rather than represented
-as a successful application deployment.
-![Kubernetes workload](docs/evidence/kubernetes-workloads.png)
-🌪️ Chaos Engineering --- Experiment Created
-The Chaos Mesh pod-kill experiment was successfully submitted with:
-``` bash
-kubectl apply -f kubernetes/observability/chaos/pod-kill-experiment.yaml
+The captured environment shows the local API, worker, control-plane API, UI, PostgreSQL, Redis, Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry Collector, Jaeger, and supporting services running.
+![Docker Compose validation](docs/evidence/docker-compose-services.png)
+SRE Log Collection
+The PowerShell diagnostic utility successfully collected logs from both application services:
+```text
+Collected: 2
+Failed:    0
+Archive:   created successfully
 ```
-The Kubernetes API confirmed creation of the `PodChaos` resource.
+![SRE log collection](docs/evidence/log-collection-success.png)
+Kubernetes Validation
+The Kubernetes environment was inspected with:
+```bash
+kubectl get all -n dev
+```
+The capture demonstrates creation of the expected Kubernetes resources, including Deployments, ReplicaSets, Pods, Services, Redis, and an HPA.
+The same validation also exposed an ImagePullBackOff / ErrImagePull condition for the API and worker images. This is deliberately documented as a validation finding rather than being presented as a successful application deployment.
+![Kubernetes validation](docs/evidence/kubernetes-workloads.png)
+Chaos Mesh
+A PodChaos experiment was successfully submitted:
+```bash
+kubectl apply \
+  -f kubernetes/observability/chaos/pod-kill-experiment.yaml
+```
 ![Chaos Mesh experiment](docs/evidence/chaos-mesh-experiment-created.png)
-🧹 Environment Cleanup
-The local k3d cluster was explicitly deleted after testing:
-``` bash
+Environment Lifecycle
+The k3d cluster was subsequently removed with:
+```bash
 k3d cluster delete opsforge-cluster
 ```
-The screenshot also records the subsequent Docker Compose shutdown
-command. This demonstrates that the development environment is treated
-as reproducible infrastructure that can be created, exercised, and torn
-down.
+This demonstrates the intended lab lifecycle: provision → test → inspect → experiment → tear down.
 ![Environment cleanup](docs/evidence/environment-cleanup.png)
-☁️ Terraform --- AWS Infrastructure Plan Evidence
+Terraform / AWS
 Terraform was executed from:
-``` text
+```text
 infrastructure/terraform/
 ```
-The captured plan output shows Terraform resolving AWS data sources and
-preparing infrastructure resources including:
-Amazon EKS
-EKS managed node group components
-CloudWatch logging
-IAM roles and policies
-OIDC provider / IRSA
-Security groups and rules
-VPC networking
-Internet Gateway
-Elastic IP / NAT infrastructure
-Kubernetes authentication configuration
+The captured plan shows AWS data-source resolution and planned resources including EKS, managed node-group components, CloudWatch logging, IAM, OIDC/IRSA, security groups, VPC networking, Internet Gateway, NAT infrastructure, and Kubernetes authentication configuration.
 ![Terraform plan evidence](docs/evidence/terraform-plan-evidence.png)
-```{=html}
 <details>
-```
-```{=html}
-<summary>
-```
-`<strong>`{=html}View the complete Terraform plan
-capture`</strong>`{=html}
-```{=html}
-</summary>
-```
-The repository includes the individual Terraform terminal captures used
-to build the evidence above.
+<summary><strong>View Terraform plan capture set</strong></summary>
 ![Terraform plan 01](docs/evidence/terraform-plan-01.png)
 ![Terraform plan 02](docs/evidence/terraform-plan-02.png)
 ![Terraform plan 03](docs/evidence/terraform-plan-03.png)
@@ -1326,473 +476,54 @@ to build the evidence above.
 ![Terraform plan 13](docs/evidence/terraform-plan-13.png)
 ![Terraform plan 14](docs/evidence/terraform-plan-14.png)
 ![Terraform plan 15](docs/evidence/terraform-plan-15.png)
-```{=html}
 </details>
-```
-> **Lab security note:** the captured Terraform configuration includes
-> lab-oriented network settings such as public EKS API access and broad
-> CIDR rules. These screenshots demonstrate infrastructure provisioning
-> workflow; they should not be interpreted as production security
-> recommendations. Production deployments should restrict API access and
-> security-group rules to the minimum required scope.
+> **Security note:** the captured lab configuration includes broad network settings. These screenshots demonstrate infrastructure provisioning workflow and should not be treated as production security recommendations. Production EKS API access and security-group rules should be restricted to the minimum required scope.
 ---
-☸️ Kubernetes Deployment
-OpsForge can be deployed to a local Kubernetes cluster such as:
+Local Development
+Prerequisites
+Docker
+Docker Compose
+Git
+Node.js
+Go
+Python
+PowerShell
+Start the platform
+```bash
+git clone https://github.com/kunal-1207/OpsForge.git
+cd OpsForge
+
+docker compose up --build -d
+docker compose ps
+```
+Typical local endpoints:
+Service	Endpoint
+OpsForge Portal	`http://localhost:5173`
+Node.js API	`http://localhost:3000`
+Grafana	`http://localhost:3001`
+Jaeger	`http://localhost:16686`
+> Ports may vary with the current Compose configuration.
+---
+Kubernetes
+OpsForge can be deployed to a local Kubernetes environment such as:
+k3d / k3s
 kind
 minikube
 Docker Desktop Kubernetes
 Apply the development overlay:
-``` bash
+```bash
 kubectl apply -k kubernetes/overlays/dev
 ```
-Verify workloads:
-``` bash
+Inspect the environment:
+```bash
 kubectl get pods -A
-```
-Check services:
-``` bash
 kubectl get svc -A
-```
-Check deployments:
-``` bash
 kubectl get deployments -A
 ```
 ---
-☁️ AWS Infrastructure
-Terraform is responsible for provisioning the foundational AWS
-infrastructure.
-The infrastructure layer can provision components such as:
-``` text
-AWS
-├── VPC
-├── Networking
-├── IAM
-├── EKS
-├── RDS
-└── Supporting resources
-```
-Location:
-``` text
-infrastructure/terraform/
-```
-Typical workflow:
-``` bash
-terraform init
-terraform fmt
-terraform validate
-terraform plan
-terraform apply
-```
-> **Important:** AWS credentials must never be committed to the
-> repository.
-Use the AWS CLI credential chain, environment variables, or an
-appropriate CI/CD secret-management mechanism.
----
-🏗️ Platform Engineering
-OpsForge introduces a dedicated control plane implemented in Go.
-The control plane provides the foundation for platform automation.
-``` text
-Developer
-    │
-    ▼
-OpsForge Portal / CLI
-    │
-    ▼
-Go Control Plane
-    │
-    ├── PostgreSQL
-    │
-    └── Kubernetes Controller
-              │
-              ▼
-          Kubernetes
-```
-The control plane is responsible for platform-level operations rather
-than application business logic.
----
-🐹 Go Engineering
-Go is used throughout the platform for cloud-native engineering.
-Components include:
-Control Plane API
-Provides the platform API.
-CLI
-Provides command-line access to platform operations.
-Example:
-``` bash
-opsforge app list
-opsforge app get payments
-opsforge app deploy payments
-opsforge app status payments
-opsforge app rollback payments
-```
-Kubernetes Controller
-The controller demonstrates the Kubernetes reconciliation model.
-Conceptually:
-``` text
-Desired State
-     │
-     ▼
-Custom Resource
-     │
-     ▼
-Go Controller
-     │
-     ▼
-Reconciliation
-     │
-     ▼
-Actual Kubernetes State
-```
-This provides hands-on experience with:
-Go
-Kubernetes APIs
-CRDs
-controllers
-reconciliation
-structured logging
-REST APIs
-CLI development
-concurrency
-testing
----
-🗄️ PostgreSQL
-PostgreSQL provides persistent storage for platform metadata.
-The database is used for information such as:
-applications
-environments
-deployments
-deployment events
-incidents
-audit events
-The database layer demonstrates:
-relational modeling
-SQL
-migrations
-indexes
-constraints
-transactions
-connection management
-Database configuration is externalized and must never contain committed
-credentials.
----
-🔄 GitOps with Argo CD
-Argo CD provides declarative Kubernetes delivery.
-The desired workflow is:
-``` text
-Developer
-    │
-    ▼
-Git Commit
-    │
-    ▼
-Git Repository
-    │
-    ▼
-Argo CD
-    │
-    ▼
-Kubernetes
-```
-Argo CD provides:
-declarative deployments
-synchronization
-drift detection
-deployment health
-rollback capabilities
-Configuration:
-``` text
-kubernetes/argocd/
-```
-Example:
-``` bash
-kubectl apply -f kubernetes/argocd/opsforge-app.yaml
-```
----
-📈 Event-Driven Autoscaling with KEDA
-OpsForge uses Redis-backed background jobs to demonstrate event-driven
-scaling.
-The scaling model is:
-``` text
-Application
-    │
-    ▼
-Redis Queue
-    │
-    ▼
-Queue Depth
-    │
-    ▼
-KEDA
-    │
-    ▼
-Worker Replicas
-```
-When queue depth increases, KEDA can increase worker capacity.
-When workload decreases, worker capacity can scale down.
-Configuration:
-``` text
-kubernetes/base/keda-scaledobject.yaml
-```
-This complements Kubernetes HPA by allowing scaling based on application
-workload signals rather than only CPU or memory utilization.
----
-🔭 Observability
-OpsForge treats observability as a first-class platform capability.
-OpenTelemetry
-OpenTelemetry provides distributed telemetry across application and
-platform components.
-The telemetry pipeline can include:
-``` text
-Application
-    │
-    ▼
-OpenTelemetry
-    │
-    ├── Metrics
-    ├── Logs
-    └── Traces
-```
-This enables distributed request analysis across:
-``` text
-API
- ↓
-Go Control Plane
- ↓
-Redis / PostgreSQL
- ↓
-Worker
-```
----
-Prometheus
-Prometheus collects operational and application metrics.
-Examples include:
-request rate
-request latency
-error rate
-resource utilization
-queue depth
-worker processing rate
----
-Grafana
-Grafana provides operational dashboards for:
-application health
-Kubernetes resources
-workload performance
-infrastructure utilization
-SRE indicators
----
-Loki
-Loki provides centralized log aggregation.
-Services produce structured logs where practical, allowing engineers to
-correlate logs with operational events.
----
-Alertmanager
-Alertmanager handles alert routing and grouping.
-Alerts can cover:
-service availability
-elevated error rates
-latency
-resource saturation
-pod failures
-queue backlog
-infrastructure health
----
-🧬 eBPF Runtime Observability
-OpsForge includes eBPF-based runtime visibility using Cilium
-Tetragon.
-This provides lower-level visibility into:
-processes
-system activity
-network behavior
-container runtime activity
-Configuration:
-``` text
-kubernetes/observability/ebpf/
-```
-Example:
-``` bash
-kubectl logs \
-  -n kube-system \
-  -l app.kubernetes.io/name=tetragon \
-  -c export-stdout \
-  -f
-```
-eBPF complements application-level observability rather than replacing
-metrics, logs, or traces.
----
-🛡️ Security
-Security is integrated into the development and deployment lifecycle.
-Container Security
-Trivy is used for vulnerability scanning.
-Example checks include:
-container image vulnerabilities
-dependency vulnerabilities
-infrastructure configuration issues
-Kubernetes Security
-OpsForge incorporates:
-RBAC
-NetworkPolicies
-SecurityContexts
-resource limits
-least-privilege access
-Security configuration:
-``` text
-kubernetes/security/
-```
----
-🔧 Infrastructure as Code
-Terraform manages cloud infrastructure.
-Crossplane provides a complementary Kubernetes-native infrastructure
-model.
-The distinction is intentional:
-``` text
-Terraform
-    │
-    ▼
-Cloud Foundation
-```
-while:
-``` text
-Kubernetes
-    │
-    ▼
-Crossplane
-    │
-    ▼
-Cloud Resources
-```
-This demonstrates two different infrastructure management paradigms.
----
-🔀 CI/CD
-OpsForge supports multiple CI/CD approaches.
-GitHub Actions
-Located under:
-``` text
-.github/workflows/
-```
-The pipeline can perform:
-``` text
-Checkout
-   ↓
-Test
-   ↓
-Lint
-   ↓
-Security Scan
-   ↓
-Build
-   ↓
-Container Scan
-   ↓
-Publish
-   ↓
-Deploy
-```
-Jenkins
-A declarative Jenkins pipeline demonstrates Groovy-based CI/CD
-automation.
-Location:
-``` text
-cicd/jenkins/Jenkinsfile
-```
-GitHub Actions is the primary repository CI workflow; Jenkins exists as
-an additional platform engineering example.
----
-🧪 SRE & Reliability Engineering
-OpsForge applies core SRE principles to the platform.
-Four Golden Signals
-Latency
-How long requests take.
-Traffic
-How much demand the system receives.
-Errors
-How frequently requests or operations fail.
-Saturation
-How close the system is to its resource limits.
----
-SLOs and Error Budgets
-OpsForge uses:
-``` text
-SLI
- ↓
-SLO
- ↓
-Error Budget
- ↓
-Burn Rate
- ↓
-Alert
-```
-The goal is to demonstrate how reliability targets can influence
-operational decisions.
----
-💥 Failure Engineering
-A reliable system must be tested under failure.
-OpsForge includes controlled failure scenarios such as:
-Application failure
-``` text
-Application crashes
-        ↓
-Kubernetes detects failure
-        ↓
-Container restarted
-        ↓
-Health restored
-```
-Queue overload
-``` text
-Traffic increases
-        ↓
-Redis queue grows
-        ↓
-KEDA scales workers
-        ↓
-Queue drains
-```
-Bad deployment
-``` text
-Deployment
-     ↓
-Error rate increases
-     ↓
-Alert
-     ↓
-Investigation
-     ↓
-Rollback
-     ↓
-Recovery
-```
-Pod disruption
-``` text
-Pod failure
-    ↓
-Kubernetes rescheduling
-    ↓
-Replacement pod
-    ↓
-Service recovery
-```
----
-🌪️ Chaos Engineering
-Chaos Mesh is used to introduce controlled failures into Kubernetes
-workloads.
-Example experiment:
-``` bash
-kubectl apply \
-  -f kubernetes/observability/chaos/pod-kill-experiment.yaml
-```
-The purpose is not simply to break the system.
-The experiment should answer:
-> Can the platform detect the failure, maintain acceptable availability,
-> recover automatically, and provide enough telemetry for an engineer to
-> diagnose what happened?
----
-🤖 SRE Automation Toolkit
-OpsForge includes operational utilities for common engineering tasks.
-PowerShell --- Log Collection
-Collect diagnostic logs from Docker Compose or Kubernetes.
-``` powershell
+SRE Automation
+PowerShell — Diagnostic Collection
+```powershell
 cd automation/powershell
 
 .\Collect-Logs.ps1 `
@@ -1800,23 +531,9 @@ cd automation/powershell
   -Services api-service,worker-service `
   -OutputDirectory .\artifacts\logs
 ```
-Kubernetes example:
-``` powershell
-.\Collect-Logs.ps1 `
-  -Mode Kubernetes `
-  -Services api-service,worker-service,opsforge-api `
-  -OutputDirectory .\artifacts\logs
-```
-The utility produces a structured archive containing:
-service logs
-collection metadata
-environment information
-collection errors
----
-Python --- Cluster Health
-The Python automation layer provides operational health checks using
-Prometheus data.
-``` bash
+The collector produces a structured archive containing service logs, collection metadata, environment information, and collection errors.
+Python — Cluster Health
+```bash
 cd automation/python
 
 pip install -r requirements.txt
@@ -1824,15 +541,10 @@ pip install -r requirements.txt
 python cluster-health.py \
   --prometheus-url http://localhost:9090
 ```
-Potential operational checks include:
-service availability
-error rates
-latency
-resource health
-alert state
+The health-check layer can inspect availability, error rates, latency, resource health, and alert state.
 ---
-📁 Repository Structure
-``` text
+Repository Structure
+```text
 OpsForge/
 │
 ├── app/
@@ -1876,7 +588,6 @@ OpsForge/
 │   └── powershell/
 │
 ├── chaos/
-│
 ├── docs/
 │   ├── architecture/
 │   ├── getting-started/
@@ -1888,133 +599,26 @@ OpsForge/
 ├── Makefile
 └── README.md
 ```
-The actual repository structure should be treated as authoritative if it
-differs from this conceptual overview.
 ---
-🧰 Developer Workflow
-The intended engineering lifecycle is:
-``` text
-Code
- │
- ▼
-Test
- │
- ▼
-Security Scan
- │
- ▼
-Build
- │
- ▼
-Containerize
- │
- ▼
-Deploy
- │
- ▼
-Observe
- │
- ▼
-Detect
- │
- ▼
-Investigate
- │
- ▼
-Recover
- │
- ▼
-Learn
-```
-This lifecycle is the core idea behind OpsForge.
----
-📚 Engineering Skills Demonstrated
-OpsForge provides hands-on exposure to:
-Programming
-Go
-Python
-TypeScript
-Node.js
-Bash
-PowerShell
-Groovy
-Cloud & Infrastructure
-AWS
-Terraform
-Crossplane
-Kubernetes
-Docker
+Engineering Skills Demonstrated
 Platform Engineering
-Internal Developer Platforms
-Control-plane APIs
-Kubernetes controllers
-CRDs
-Developer portals
-Self-service workflows
-DevOps
-GitHub Actions
-Jenkins
-GitOps
-Argo CD
-Helm
-Kustomize
+`IDP` · `Control Planes` · `Kubernetes Controllers` · `CRDs` · `Developer Portals` · `Self-Service Workflows`
+Cloud & Infrastructure
+`AWS` · `EKS` · `Terraform` · `Crossplane` · `IAM` · `VPC` · `RDS`
+Kubernetes & Containers
+`Kubernetes` · `Docker` · `Helm` · `Kustomize` · `KEDA`
+GitOps & CI/CD
+`Argo CD` · `GitHub Actions` · `Jenkins` · `GitOps`
 Observability
-Prometheus
-Grafana
-Loki
-OpenTelemetry
-Alertmanager
-eBPF
-Reliability
-SLI
-SLO
-Error budgets
-Burn-rate alerting
-Incident response
-Runbooks
-Chaos engineering
+`OpenTelemetry` · `Prometheus` · `Grafana` · `Loki` · `Alertmanager` · `eBPF`
 Security
-Trivy
-RBAC
-NetworkPolicies
-Kubernetes security contexts
-Container security
-IaC security
+`Trivy` · `RBAC` · `NetworkPolicies` · `SecurityContexts` · `IaC Security`
+Reliability
+`SLI` · `SLO` · `Error Budgets` · `Burn Rate` · `Incident Response` · `Runbooks` · `Chaos Engineering`
+Programming & Automation
+`Go` · `Python` · `TypeScript` · `Node.js` · `Bash` · `PowerShell` · `Groovy`
 ---
-🎓 Learning Objective
-OpsForge is intentionally designed as a hands-on engineering
-laboratory.
-The objective is not to memorize commands or collect technologies.
-The objective is to understand how the components interact.
-For example:
-``` text
-Go
- ↓
-Kubernetes API
- ↓
-Controller
- ↓
-CRD
- ↓
-Desired State
- ↓
-Reconciliation
- ↓
-Workload
- ↓
-Prometheus
- ↓
-Alert
- ↓
-Incident
- ↓
-Diagnosis
- ↓
-Recovery
-```
-This approach turns individual technologies into an operational system.
----
-🔐 Security & Secrets
+Security & Secrets
 Never commit:
 AWS credentials
 passwords
@@ -2022,33 +626,21 @@ API keys
 private keys
 access tokens
 production secrets
-Use environment variables, CI/CD secret stores, Kubernetes
-secret-management mechanisms, or appropriate cloud-native secret
-systems.
+Use environment variables, CI/CD secret stores, Kubernetes secret-management mechanisms, or appropriate cloud-native secret systems.
 All credentials shown in examples must be non-production placeholders.
 ---
-⚠️ Project Status
-> **Validation evidence:** This README includes screenshots from local
-> Docker Compose, PowerShell automation, Kubernetes, Chaos Mesh,
-> environment cleanup, and Terraform validation runs. They document
-> engineering execution in a lab environment; they are not a claim of
-> production deployment.
-OpsForge 2.0 is a production-oriented engineering sandbox and
-portfolio project.
-It demonstrates production engineering patterns but should not be
-interpreted as a claim that the repository is running a real production
-workload.
-Some integrations may require:
+Project Status
+OpsForge 2.0 is an active, production-oriented engineering sandbox and portfolio project.
+The repository demonstrates the architecture and workflows of a modern DevOps / SRE / Platform Engineering environment.
+The included evidence documents local execution and infrastructure validation. Some components require:
 AWS infrastructure
 a Kubernetes cluster
-appropriate cloud credentials
+cloud credentials
 external controllers/operators
-additional configuration
-Optional or environment-dependent components should be clearly
-identified in their respective documentation.
+environment-specific configuration
+The repository should therefore be evaluated as an engineering laboratory and demonstrable portfolio platform, not as a claim of an always-on production workload.
 ---
-🗺️ Roadmap
-Future improvements may include:
+Roadmap
 Multi-region deployment
 Service mesh integration
 Advanced policy enforcement
@@ -2058,35 +650,29 @@ Canary deployments
 Advanced chaos experiments
 Cost observability
 Multi-cluster management
-Advanced developer self-service workflows
+Expanded developer self-service
 Additional security automation
 ---
-🤝 Contributing
+Contributing
 Contributions are welcome.
-Recommended workflow:
-``` bash
+```bash
 git checkout -b feature/my-change
 ```
-Make the change, add tests where appropriate, and validate the affected
-infrastructure before opening a pull request.
-Pull requests should explain:
-what changed
-why it changed
-how it was tested
-operational impact
-security considerations
+Before opening a pull request:
+Add or update tests where appropriate.
+Validate affected infrastructure.
+Document operational impact.
+Document security considerations.
+Explain what changed and why.
 ---
-📄 License
-OpsForge 2.0 is licensed under the MIT License.
+License
+MIT License
 ---
 Author
 Kunal Waghmare
-Cloud DevOps Engineer • Platform Engineering • Site Reliability
-Engineering
+Cloud DevOps Engineer · Platform Engineering · Site Reliability Engineering
 GitHub: `kunal-1207`
 ---
 > **OpsForge 2.0**
->
-> *Build it. Deploy it. Observe it. Break it. Recover it.*
 >
 > *Build it. Deploy it. Observe it. Break it. Recover it.*
