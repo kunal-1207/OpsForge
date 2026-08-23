@@ -378,12 +378,13 @@ The workflow supports:
 
 Observability is treated as a **platform capability**, not an afterthought.
 
-```text
-                    ┌── Prometheus
-                    │
-Application ──► OpenTelemetry ──┼── Grafana
-                    │
-                    └── Loki
+```mermaid
+flowchart LR
+    APP[Application] --> OTEL[OpenTelemetry]
+
+    OTEL --> PROM[Prometheus]
+    OTEL --> GRAF[Grafana]
+    OTEL --> LOKI[Loki]
 ```
 
 ## Metrics
