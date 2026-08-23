@@ -580,8 +580,9 @@ docker compose ps
 
 The captured environment includes the local API, worker, control-plane API, UI, PostgreSQL, Redis, Prometheus, Grafana, Loki, Alertmanager, OpenTelemetry Collector, Jaeger, and supporting services.
 
-![Docker Compose validation](<img width="1917" height="818" alt="Screenshot 2026-08-23 150145" src="https://github.com/user-attachments/assets/2614a8f9-e387-47b7-b1e4-e8fc5c24ec2f" />
-)
+### Docker Compose Validation
+
+[<img width="1917" height="818" alt="Docker Compose validation" src="https://github.com/user-attachments/assets/2614a8f9-e387-47b7-b1e4-e8fc5c24ec2f" />](https://github.com/kunal-1207/OpsForge/blob/fb032dfc7d830aa6a3b78c4fd6fbd9c1abf91e6b/screenshots/Screenshot%202026-08-23%20150145.png)
 
 ---
 
@@ -595,7 +596,7 @@ Failed:    0
 Archive:   created successfully
 ```
 
-![SRE log collection](docs/evidence/log-collection-success.png)
+![SRE log collection](https://github.com/kunal-1207/OpsForge/blob/fb032dfc7d830aa6a3b78c4fd6fbd9c1abf91e6b/screenshots/Screenshot%202026-08-23%20150458.png)
 
 ---
 
@@ -620,7 +621,7 @@ The validation also exposed an `ImagePullBackOff / ErrImagePull` condition for t
 
 This is intentionally documented as a **validation finding**, rather than being presented as a successful application deployment.
 
-![Kubernetes validation](docs/evidence/kubernetes-workloads.png)
+![Kubernetes validation](https://github.com/kunal-1207/OpsForge/blob/fb032dfc7d830aa6a3b78c4fd6fbd9c1abf91e6b/screenshots/Screenshot%202026-08-23%20151108.png)
 
 ---
 
@@ -633,8 +634,7 @@ kubectl apply \
   -f kubernetes/observability/chaos/pod-kill-experiment.yaml
 ```
 
-![Chaos Mesh experiment](docs/evidence/chaos-mesh-experiment-created.png)
-
+![Chaos Mesh experiment](https://github.com/kunal-1207/OpsForge/blob/fb032dfc7d830aa6a3b78c4fd6fbd9c1abf91e6b/screenshots/Screenshot%202026-08-23%20151721.png)
 ---
 
 ## Environment Lifecycle
@@ -654,9 +654,6 @@ flowchart LR
     C --> D[Experiment]
     D --> E[Tear Down]
 ```
-
-![Environment cleanup](docs/evidence/environment-cleanup.png)
-
 ---
 
 ## Terraform / AWS
@@ -680,7 +677,7 @@ The captured plan demonstrates AWS data-source resolution and planned infrastruc
 * NAT infrastructure
 * Kubernetes authentication configuration
 
-![Terraform plan evidence](docs/evidence/terraform-plan-evidence.png)
+![Terraform plan evidence](https://github.com/kunal-1207/OpsForge/blob/fb032dfc7d830aa6a3b78c4fd6fbd9c1abf91e6b/screenshots/Screenshot%202026-08-23%20155750.png)
 
 <details>
 <summary><strong>View Terraform plan capture set</strong></summary>
