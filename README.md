@@ -69,8 +69,9 @@ OpsForge brings together the major disciplines involved in building and operatin
 
 OpsForge is organized into five logical layers:
 
-flowchart TB
 ```mermaid
+flowchart TB
+
     subgraph DX["Developer Experience"]
         PORTAL["React / TypeScript Portal"]
         CLI["Go CLI"]
